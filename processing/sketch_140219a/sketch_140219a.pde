@@ -9,63 +9,87 @@ int max_inf_loop_count = 100;
 int max_abs_count = 200;
 int speed_multiplier = 5;
 
-double min_value;
-double max_value;
+int pixel_offset_x = 150;
+int pixel_offset_y = 0;
+
+boolean showGrid = false;
+
+double min_value_x;
+double min_value_y;
 double delta_value;
 
 void reset() {
+  clear();
   resolution = 200;
   grid_delta = 50;
   max_inf_loop_count = 100;
   max_abs_count = 200;
   speed_multiplier = 5; 
+  pixel_offset_x = 0;
+  pixel_offset_y = 0;
 }
 
 void setup() {
   colorMode(HSB);
   size(600, 600);  
-  
   //noLoop();
 }
 
 void initValues() {
+  clear();
   // for now assume width = height
-  min_value = (double) -width/(2 * resolution); // at x = 0
-  max_value = (double) width/(2 * resolution); // at x = width
-  delta_value = (double) (max_value - min_value) / width; // ie value increase with 1 dx
+  min_value_x = (double) -width/(2 * resolution); 
+  min_value_y = (double) -height/(2 * resolution); 
+  double max_value = (double) width/(2 * resolution); // at x = width
+  delta_value = (double) (max_value - min_value_x) / width; // ie value increase with 1 dx
+  min_value_x -= delta_value * pixel_offset_x;
+  min_value_y -= delta_value * pixel_offset_y;
 }
 
 void draw() {
   initValues();
-  fill(#000000);
   pushMatrix();
+  fill(#000000);
   drawMandel();  
-  drawGrid();  
+  if (showGrid) drawGrid();  
   popMatrix();
 }
 
-void mousePressed() {
- resolution = mouseX;
- speed_multiplier = mouseY/10;
- if (mouseY > height/2) speed_multiplier *= -1;
-}
+//void mousePressed() {
+// resolution = mouseX;
+// speed_multiplier = mouseY/10;
+// if (mouseY > height/2) speed_multiplier *= -1;
+//}
 
-void keyPressed() {
- switch (key) {
-   case BACKSPACE: 
-     reset();
-   break;
-   case 's': 
-     save("screenshot.png");
-   break;
- }
- 
-}
+int last_x;
+int last_y;
+
+//void keyPressed() {
+// switch (key) {
+//   case BACKSPACE: 
+//     reset();
+//   break;
+////   case 's': 
+////     save("screenshot.png");
+////   break;
+// }
+// 
+// last_x = mouseX;
+// last_y= mouseY;
+// 
+//}
+//
+//void mouseDragged() {
+//  
+//  pixel_offset_x += last_x;
+//  pixel_offset_y += last_y;
+//
+//}
 
 
 void drawGrid() {
 
-  double x_val = min_value;
+  double x_val = min_value_x;
   stroke(#FF0000);
   fill(#FF0000);
   textSize(8);
@@ -73,16 +97,16 @@ void drawGrid() {
   for (int i = 0; i < width; i++) { 
     if (i % grid_delta == 0) {
       line(i, height/2-5, i, height/2+5); 
-      text("" + (i == height/2 ? "0" : roundToSignificantFigures(x_val, 2)), i - 1, height/2+14);
+      text("" + roundToSignificantFigures(x_val, 2), i - 1, height/2+14);
     }
     x_val += delta_value;
   }
 
-  double y_val = min_value; 
+  double y_val = min_value_y; 
   for (int j = 0; j < width; j++) { 
     if (j % grid_delta == 0) {
       line(width/2 -5, j, width/2 +5, j); 
-      text("" + (j == width/2 ? "0" : roundToSignificantFigures(y_val, 2)), width/2 +10, j + 3);
+      text("" + roundToSignificantFigures(y_val, 2), width/2 +10, j + 3);
     }
     y_val += delta_value;
   }
@@ -103,9 +127,9 @@ double roundToSignificantFigures(double num, int n) {
 
 void drawMandel() {
 
-  double x_val = min_value;
+  double x_val = min_value_x;
   for (int i = 0; i < width; i++) {
-    double y_val = min_value;
+    double y_val = min_value_y;
     for (int j = 0; j < height; j++) {
 
       Complex value_at_i_and_j = new Complex(x_val, y_val);
