@@ -5,6 +5,7 @@
  * space bar: show/hide grid
  * back space: reset
  * double-click: random color multiplier
+ * key 1-9: change function to increase power by one
  * Author: Alex Bruckner Feb 2014
  */
 
@@ -18,6 +19,7 @@ int pixel_offset_x = 150;
 int pixel_offset_y = 0;
 
 boolean showGrid = true;
+int function_power = 2;
 
 double min_value_x;
 double min_value_y;
@@ -34,15 +36,15 @@ void reset() {
   pixel_offset_x = 150;
   pixel_offset_y = 0;
   showGrid = true;
+  function_power = 2;
 }
 
 void setup() {  
-  //colorMode(HSB, 1,5,255,255);
-  size(600, 600);
+  size(800, 600);
 }
 
 void initValues() {
-  clear();
+  //clear();
   // for now assume width = height
   min_value_x = (double) -width/(2 * resolution); 
   min_value_y = (double) -height/(2 * resolution); 
@@ -53,12 +55,12 @@ void initValues() {
 }
 
 void draw() {
-  pushMatrix();
+  //pushMatrix();
   initValues();
   fill(#000000);
   drawMandel();  
   if (showGrid) drawGrid();  
-  popMatrix();
+  //popMatrix();
 }
 
 void keyPressed() {
@@ -72,13 +74,44 @@ void keyPressed() {
   case 's': 
     save("screenshot.png");
     break;
+  case '1':
+    function_power = 1;
+    break;
+  case '2':
+    function_power = 2;
+    break;
+  case '3':
+    function_power = 3;
+    break;
+  case '4':
+    function_power = 4;
+    break;
+  case '5':
+    function_power = 5;
+    break;
+  case '6':
+    function_power = 6;
+    break;
+  case '7':
+    function_power = 7;
+    break;
+  case '8':
+    function_power = 8;
+    break;
+  case '9':
+    function_power = 9;
+    break;
+  case '0':
+    function_power = 0;
+    break;
+    
   }
 }
 
 void mousePressed() {
   if (mouseEvent.getClickCount()==2) {
     speed_multiplier = new java.util.Random().nextInt();
-  }
+  } 
 }
 
 void mouseDragged() {
@@ -138,7 +171,7 @@ void drawMandel() {
       Complex value_at_i_and_j = new Complex(x_val, y_val);
 
       int speed;
-      if ((speed = goesToInfinity(value_at_i_and_j)) > -1) {
+      if ((speed = goesToInfinity(value_at_i_and_j, function_power)) > -1) {
         //stroke(speed*speed_multiplier);
         pixels[i+j*width] = color(speed*speed_multiplier);
       } 
@@ -191,15 +224,27 @@ class Complex {
 }
 
 // Z <-> Z^2 + C  with initial Z = 0, if Z > cutoff after N iterations, position C -> inf.
-int goesToInfinity(final Complex z) {
+int goesToInfinity(final Complex z, int power) {
 
   Complex test = z;
 
   for (int count = 0; count < max_inf_loop_count; count++) {
-    test = test.multiply(test).add(z);    
+    test = pow(test, power).add(z);    
     if (test.isNaN() || test.abs() > max_abs_count) return count;
   }
 
   return -1;
 }
+
+Complex pow(Complex z, int power) {
+   if (power == 0) return new Complex(1,0);
+   Complex test = z;
+   for (int i = 2; i <= power; i++){
+      test = test.multiply(test);
+   } 
+   return test;
+}
+
+
+
 
