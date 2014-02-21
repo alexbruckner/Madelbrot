@@ -141,7 +141,7 @@ void drawMandel() {
       } 
       else {
         //stroke(0);
-        pixels[i*j+j] = 0;
+        pixels[i+j*width] = 0;
       }
 
       //rect(i, j, 1, 1);
