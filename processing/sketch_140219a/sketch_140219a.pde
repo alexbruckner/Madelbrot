@@ -1,8 +1,13 @@
 /*
  * ZOOM-ABLE MANDELBROT SET 
- * on mouse click: x-axis determins zoom level, y-axis determines black/yellow colouring.
+ * on mouse drag: move contents around
+ * mouse wheel: increase resolution
+ * space bar: show/hide grid
+ * back space: reset
+ * double-click: random color multiplier
+ * Author: Alex Bruckner Feb 2014
  */
-// the max/min actual complex values
+
 int resolution = 200;
 int grid_delta = 50;
 int max_inf_loop_count = 100;
@@ -19,19 +24,20 @@ double min_value_y;
 double delta_value;
 
 
-
 void reset() {
   clear();
   resolution = 200;
   grid_delta = 50;
   max_inf_loop_count = 100;
-  max_abs_count = 200;
-  speed_multiplier = 5; 
-  pixel_offset_x = 0;
+  max_abs_count = 10;
+  speed_multiplier = 3;
+  pixel_offset_x = 150;
   pixel_offset_y = 0;
+  showGrid = true;
 }
 
 void setup() {  
+  //colorMode(HSB, 1,5,255,255);
   size(600, 600);
 }
 
@@ -55,36 +61,33 @@ void draw() {
   popMatrix();
 }
 
-//void mousePressed() {
-// resolution = mouseX;
-// speed_multiplier = mouseY/10;
-// if (mouseY > height/2) speed_multiplier *= -1;
-//}
+void keyPressed() {
+  switch (key) {
+  case BACKSPACE: 
+    reset();
+    break;
+  case ' ': 
+    showGrid = !showGrid;
+    break;
+  case 's': 
+    save("screenshot.png");
+    break;
+  }
+}
 
-//void keyPressed() {
-// switch (key) {
-//   case BACKSPACE: 
-//     reset();
-//   break;
-////   case 's': 
-////     save("screenshot.png");
-////   break;
-// }
-// 
-// last_x = mouseX;
-// last_y= mouseY;
-// 
-//}
-//
-
+void mousePressed() {
+  if (mouseEvent.getClickCount()==2) {
+    speed_multiplier = new java.util.Random().nextInt();
+  }
+}
 
 void mouseDragged() {
   pixel_offset_x += (mouseX - pmouseX);
   pixel_offset_y += (mouseY - pmouseY);
 }
 
-void mouseWheel(MouseEvent event) {
-  resolution += event.getAmount()*10;
+void mouseWheel() {
+  resolution +=mouseEvent.getAmount()*10;
 }
 
 void drawGrid() {
