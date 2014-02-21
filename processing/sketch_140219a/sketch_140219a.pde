@@ -6,17 +6,19 @@
 int resolution = 200;
 int grid_delta = 50;
 int max_inf_loop_count = 100;
-int max_abs_count = 200;
-int speed_multiplier = 5;
+int max_abs_count = 10;
+int speed_multiplier = 3;
 
 int pixel_offset_x = 150;
 int pixel_offset_y = 0;
 
-boolean showGrid = false;
+boolean showGrid = true;
 
 double min_value_x;
 double min_value_y;
 double delta_value;
+
+
 
 void reset() {
   clear();
@@ -29,10 +31,8 @@ void reset() {
   pixel_offset_y = 0;
 }
 
-void setup() {
-  colorMode(HSB);
-  size(600, 600);  
-  //noLoop();
+void setup() {  
+  size(600, 600);
 }
 
 void initValues() {
@@ -47,8 +47,8 @@ void initValues() {
 }
 
 void draw() {
-  initValues();
   pushMatrix();
+  initValues();
   fill(#000000);
   drawMandel();  
   if (showGrid) drawGrid();  
@@ -60,9 +60,6 @@ void draw() {
 // speed_multiplier = mouseY/10;
 // if (mouseY > height/2) speed_multiplier *= -1;
 //}
-
-int last_x;
-int last_y;
 
 //void keyPressed() {
 // switch (key) {
@@ -79,13 +76,16 @@ int last_y;
 // 
 //}
 //
-//void mouseDragged() {
-//  
-//  pixel_offset_x += last_x;
-//  pixel_offset_y += last_y;
-//
-//}
 
+
+void mouseDragged() {
+  pixel_offset_x += (mouseX - pmouseX);
+  pixel_offset_y += (mouseY - pmouseY);
+}
+
+void mouseWheel(MouseEvent event) {
+  resolution += event.getAmount()*10;
+}
 
 void drawGrid() {
 
@@ -126,28 +126,30 @@ double roundToSignificantFigures(double num, int n) {
 }
 
 void drawMandel() {
-
+  loadPixels(); 
   double x_val = min_value_x;
   for (int i = 0; i < width; i++) {
     double y_val = min_value_y;
     for (int j = 0; j < height; j++) {
 
       Complex value_at_i_and_j = new Complex(x_val, y_val);
-      
+
       int speed;
       if ((speed = goesToInfinity(value_at_i_and_j)) > -1) {
-        stroke(speed*speed_multiplier);
+        //stroke(speed*speed_multiplier);
+        pixels[i+j*width] = color(speed*speed_multiplier);
       } 
       else {
-        stroke(0);
+        //stroke(0);
+        pixels[i*j+j] = 0;
       }
-      
-      rect(i, j, 1, 1);
+
+      //rect(i, j, 1, 1);
       y_val += delta_value;
     }
     x_val += delta_value;
   }
-  
+  updatePixels();
 }
 
 // helper classes and methods:
@@ -155,7 +157,7 @@ void drawMandel() {
 class Complex {
   double x;
   double y; 
-  
+
   Complex(double x, double y) {
     this.x = x;
     this.y = y;
@@ -179,18 +181,17 @@ class Complex {
   public String toString() {
     return String.format("(%s,%s)", x, y);
   }
-  
+
   boolean isNaN() {
-     return Double.isNaN(x) || Double.isNaN(y) || Double.isInfinite(x) || Double.isInfinite(y);
+    return Double.isNaN(x) || Double.isNaN(y) || Double.isInfinite(x) || Double.isInfinite(y);
   }
-  
 }
 
 // Z <-> Z^2 + C  with initial Z = 0, if Z > cutoff after N iterations, position C -> inf.
 int goesToInfinity(final Complex z) {
 
   Complex test = z;
-  
+
   for (int count = 0; count < max_inf_loop_count; count++) {
     test = test.multiply(test).add(z);    
     if (test.isNaN() || test.abs() > max_abs_count) return count;
